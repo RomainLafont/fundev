@@ -47,7 +47,7 @@ Ensure the following tools are installed on your system:
 2. Set up webhook proxy
     Open a terminal and run the following command to start the webhook proxy:
     ```bash
-    npx smee -u $WEBHOOK_PROXY_URL -t http://localhost:3000/api/webhook
+    npx smee -u $WEBHOOK_PROXY_URL -t http://localhost:3001/api/webhook
     ```
     Replace $WEBHOOK_PROXY_URL with the unique URL from Smee.io.
 
