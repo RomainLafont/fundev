@@ -33,7 +33,7 @@ const app = new App({
 });
 
 // Watch contract event
-const contractAddress = '0x6b175474e89094c44da98b954eedeac495271d0f'
+const contractAddress = '0xDF155f2355A4739E88Cfe13d6e1e531fB22aBAf4'
 
 // Issue created
 const issueCreated = watchContractEvent(config, {
