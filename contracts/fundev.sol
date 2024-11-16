@@ -5,7 +5,7 @@ import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract FunDev is Ownable {
+contract FunDev is Ownable(msg.sender) {
     uint256 public constant VALIDATOR_FEE_PERCENTAGE = 1;  // 1%
     uint256 public constant PROTOCOL_FEE_PERCENTAGE = 4;   // 4%
     uint256 public protocolFeeVault;
@@ -21,6 +21,7 @@ contract FunDev is Ownable {
 
     struct PullRequest {
         address proposer;
+        bool active;
         uint256 approvalsCount;
         uint256 validationsCount;
         address[] validators;
@@ -106,6 +107,7 @@ contract FunDev is Ownable {
         newPullRequest.proposer = msg.sender;
         newPullRequest.approvalsCount = 0;
         newPullRequest.validationsCount = 0;
+        newPullRequest.active = true;
 
         emit PullRequestCreated(repoName, issueId, pullRequestId, msg.sender);
     }
@@ -237,6 +239,8 @@ contract FunDev is Ownable {
         }
 
         require(usdc.transfer(proposer, proposerAmount), "Proposer transfer failed");
+
+        pullRequests[prIndex].active = false;
     }
 
     function _rejectPullRequest(
@@ -272,6 +276,8 @@ contract FunDev is Ownable {
                 require(usdc.transfer(pullRequests[prIndex].validators[i], feePerValidator), "Validator fee transfer failed");
             }
         }
+
+        pullRequests[prIndex].active = false;
     }
 
     function withdrawValidatorStake(uint256 amount) external {
@@ -280,9 +286,9 @@ contract FunDev is Ownable {
         require(amount > 0, "Amount must be greater than 0");
         
         // Check if validator is active in any pull requests
-        for (uint256 i = 0; i < pullRequests.length; i++) {
+        for (uint256 i = 0; i < numberOfPr; i++) {
             PullRequest storage pr = pullRequests[i];
-            if (!pr.completed && !pr.rejected) {  // If PR is still active
+            if (pullRequests[i].active) {  // If PR is still active
                 for (uint256 j = 0; j < pr.validators.length; j++) {
                     require(pr.validators[j] != msg.sender, "Validator active in PR");
                 }
