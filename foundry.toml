@@ -1,0 +1,8 @@
+[profile.default]
+
+# The location of the contracts directory
+contracts = "contracts"
+
+
+# The location of the output directory where compiled contracts will be saved
+out = "build/contracts/"
