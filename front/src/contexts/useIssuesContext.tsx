@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { uuidv4 } from '@walletconnect/utils';
+import { useWatchContractEvent } from 'wagmi';
 
 export interface Issue {
   id: string;
@@ -46,10 +47,28 @@ const useIssuesStore = create<IssuesState>((set) => ({
   }),
 }));
 
+const CONTRACT_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f';
+const START_BLOCK = BigInt(1);
+const abi = undefined;
+
 export const useIssuesContext = () => {
   const { issues, fundIssue } = useIssuesStore();
 
-  // Wagmi hook to fetch events will be added here
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi,
+    fromBlock: START_BLOCK,
+    eventName: 'IssueFunded',
+    onLogs(logs) {
+      logs.forEach((log) => {
+        // fundIssue({
+        //   issueId: log.args.issueId,
+        //   repo: log.args.repo,
+        //   amount: log.args.amount,
+        // });
+      });
+    },
+  });
 
   return {
     issues,
