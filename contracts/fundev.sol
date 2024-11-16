@@ -60,6 +60,9 @@ contract FunDev is Ownable(msg.sender) {
     ) external {
         require(issues[repoName][issueId].vaultBalance == 0, "Issue already exists");
 
+        require(IERC20(USDC_TOKEN).approve(address(this), initialAmount), "USDC token approval failed");
+
+        // Transfer USDC from the sender to the contract
         require(usdc.transferFrom(msg.sender, address(this), initialAmount), "USDC transfer failed");
 
         Issue storage issue = issues[repoName][issueId];
@@ -83,6 +86,8 @@ contract FunDev is Ownable(msg.sender) {
         uint256 amount
     ) external {
         require(issues[repoName][issueId].vaultBalance > 0, "Issue does not exist");
+
+        require(IERC20(USDC_TOKEN).approve(address(this), amount), "USDC token approval failed");
 
         require(usdc.transferFrom(msg.sender, address(this), amount), "USDC transfer failed");
 
@@ -115,6 +120,8 @@ contract FunDev is Ownable(msg.sender) {
         require(!isValidator[msg.sender], "Already a validator");
         require(stakeAmount >= validatorStakeAmount, "Stake amount below minimum");
         
+        require(IERC20(USDC_TOKEN).approve(address(this), stakeAmount), "USDC token approval failed");
+
         require(usdc.transferFrom(msg.sender, address(this), stakeAmount), "USDC transfer failed");
         
         validators[msg.sender] = stakeAmount;
