@@ -67,6 +67,7 @@ Ensure the following tools are installed on your system:
 
     Ensure your .env file is correctly configured before starting the server.
     Use Smee.io to forward GitHub webhooks to your local development environment.
+    If you're changing permissions to a github app, you should reinstall the app in projects using it.
 
 ## Troubleshooting
 

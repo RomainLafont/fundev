@@ -29,6 +29,7 @@ const app = new App({
 
 // This defines the message that your app will post to pull requests.
 const messageForNewPRs = "Thanks for opening a new PR! Please follow our contributing guidelines to make your PR easier to review.";
+const messageForNewIssue = "Congrats opening a new issue ! You can contribuate via this link";
 
 // This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the pull request that triggered the event.
 async function handlePullRequestOpened({octokit, payload}) {
@@ -52,8 +53,31 @@ async function handlePullRequestOpened({octokit, payload}) {
   }
 };
 
+// This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the issue that triggered the event.
+async function handleIssuesCreated({octokit, payload}) {
+  console.log(`Received a issue creation event for ${payload.repository.name}`);
+
+  try {
+    await octokit.request("POST /repos/{owner}/{repo}/issues/{payload.issue.number}/comments", {
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      issue_number: payload.issue.number,
+      body: messageForNewIssue,
+      headers: {
+        "x-github-api-version": "2022-11-28",
+      },
+    });
+  } catch (error) {
+    if (error.response) {
+      console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`)
+    }
+    console.error(error)
+  }
+};
+
 // This sets up a webhook event listener. When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined above.
 app.webhooks.on("pull_request.opened", handlePullRequestOpened);
+app.webhooks.on("issues.opened", handleIssuesCreated);
 
 // This logs any errors that occur.
 app.webhooks.onError((error) => {
