@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
 import { useWriteContract } from 'wagmi';
@@ -15,7 +15,7 @@ interface IssueDetails {
   description: string;
 }
 
-const Page = () => {
+const PageContent = () => {
   const searchParams = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [fundingAmount, setFundingAmount] = useState('');
@@ -169,5 +169,14 @@ const Page = () => {
     </div>
   );
 };
+
+export function Page() {
+  return (
+    // You could have a loading skeleton as the `fallback` too
+    <Suspense>
+      <PageContent />
+    </Suspense>
+  );
+}
 
 export default Page;
