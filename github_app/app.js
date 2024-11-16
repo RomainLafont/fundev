@@ -35,6 +35,8 @@ const app = new App({
 // Watch contract event
 const contractAddress = '0xDF155f2355A4739E88Cfe13d6e1e531fB22aBAf4'
 
+
+
 // Issue created
 const issueCreated = watchContractEvent(config, {
   address: contractAddress,
@@ -43,8 +45,18 @@ const issueCreated = watchContractEvent(config, {
   onLogs(logs) {
     console.log('New logs!', logs)
   },
+  onError(error) {
+    console.error('Error watching IssueCreated:', error)
+  }
 })
-issueCreated()
+
+// Start watching and handle any errors
+try {
+  const unwatch = issueCreated()
+  console.log('Successfully started watching IssueCreated events')
+} catch (error) {
+  console.error('Failed to start watching IssueCreated:', error)
+}
 
 // Issue updated
 const issueUpdated = watchContractEvent(config, {
