@@ -27,8 +27,11 @@ Ensure the following tools are installed on your system:
    ```bash
    npm install
    ```
+3. Get private key for github app:
+    Go to Github > Profile > Settings > Developper settings > GitHub App > fundev 
+    Generate a private key.
 
-3. Create a .env file at the root of the project and add the following variables:
+4. Create a .env file at the root of the project and add the following variables:
 
     APP_ID="YOUR_APP_ID"
     WEBHOOK_SECRET="YOUR_WEBHOOK_SECRET"
@@ -64,6 +67,7 @@ Ensure the following tools are installed on your system:
 
     Ensure your .env file is correctly configured before starting the server.
     Use Smee.io to forward GitHub webhooks to your local development environment.
+    If you're changing permissions to a github app, you should reinstall the app in projects using it.
 
 ## Troubleshooting
 
