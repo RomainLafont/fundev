@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
 import { useWriteContract } from 'wagmi';
 
-
 import { abi } from '@/abi/FunDev.json';
 
-const CONTRACT_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f';
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
 
 interface IssueDetails {
   title: string;
