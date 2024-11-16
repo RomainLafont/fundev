@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GitPullRequest, GitFork, AlertCircle } from 'lucide-react';
 import { abi } from '@/abi/FunDev.json';
 import { useWriteContract } from 'wagmi';
 
-const CONTRACT_ADDRESS = '0xDF155f2355A4739E88Cfe13d6e1e531fB22aBAf4';
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
 
-const PullRequestPage = () => {
+const PageContent = () => {
   const searchParams = useSearchParams();
   
   const issueId = searchParams.get('issueId');
@@ -108,4 +108,13 @@ const PullRequestPage = () => {
   );
 };
 
-export default PullRequestPage;
+const Page = () => {
+    return (
+      // You could have a loading skeleton as the `fallback` too
+      <Suspense>
+        <PageContent />
+      </Suspense>
+    );
+  };
+
+export default Page;
