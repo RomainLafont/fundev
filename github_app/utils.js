@@ -67,7 +67,7 @@ function generateJWT() {
 }
 
 async function getInstallationToken(jwtToken) {
-  const INSTALLATION_ID = "57205356";
+  const INSTALLATION_ID = "57240849";
   const url = `https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`;
 
   try {
@@ -87,37 +87,6 @@ async function getInstallationToken(jwtToken) {
     return installationToken;
   } catch (error) {
     console.error("Error fetching installation token:", error.response.data);
-  }
-}
-
-async function makeGraphQLRequest(installationToken) {
-  const graphqlUrl = "https://api.github.com/graphql";
-
-  const query = `
-    query {
-      repository(owner: "OWNER", name: "REPO") {
-        name
-        description
-        stargazerCount
-      }
-    }
-  `;
-
-  try {
-    const response = await axios.post(
-      graphqlUrl,
-      { query },
-      {
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    );
-
-    console.log("GraphQL Response:", response.data);
-  } catch (error) {
-    console.error("Error making GraphQL request:", error.response.data);
   }
 }
 
