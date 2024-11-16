@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useRouter } from 'next/navigation';
 
 interface Issue {
   id: number;
@@ -48,6 +51,9 @@ const issues: Issue[] = [
 ];
 
 const Page = () => {
+
+  const router = useRouter();
+
   return (
     <div>
       <h1>Available issues</h1>
@@ -62,7 +68,7 @@ const Page = () => {
         </TableHeader>
         <TableBody>
           {issues.map((issue) => (
-            <TableRow key={issue.id}>
+            <TableRow key={issue.id} onClick={() => router.push(`/issues/${issue.id}`)} className="cursor-pointer">
               <TableCell className="font-medium">{issue.repo}</TableCell>
               <TableCell>{issue.name}</TableCell>
               <TableCell>{issue.status}</TableCell>

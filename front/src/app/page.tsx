@@ -5,8 +5,7 @@ import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
-
-
+  
   const router = useRouter();
   const { ready, authenticated } = usePrivy();
 
