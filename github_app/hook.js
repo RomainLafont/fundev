@@ -2,6 +2,8 @@ import {
   messageForNewIssue,
   generatePullRequestCommentCreation,
   messageForAddReviewer,
+  messageForPRApproval,
+  messageForPRDisapproval,
 } from "./messages.js";
 import { fetchReviewers, fetchProjectFunds } from "./utils.js";
 
@@ -13,18 +15,14 @@ export async function handlePullRequestOpened({ octokit, payload }) {
 
   // Fetch dynamic data
   const reviewers = await fetchReviewers(octokit, payload);
-  const totalReviewers = reviewers.length;
-  const validatedReviewers = reviewers.filter((r) => r.validated);
-  const reviewerNames = validatedReviewers
-    .map((r) => `✅ ${r.name}`)
-    .join("\n  ");
+  const totalReviewers = Object.entries(reviewers).length;
   const totalFunds = await fetchProjectFunds();
   const devName = payload.repository.owner.login;
 
   // Generate the Markdown comment dynamically
   const commentBody = generatePullRequestCommentCreation({
     totalReviewers,
-    reviewerNames,
+    reviewers,
     totalFunds,
     devName,
   });
@@ -84,17 +82,79 @@ export async function handleReviewerAdd({ octokit, payload }) {
 
   const totalFunds = await fetchProjectFunds();
   const reviewers = await fetchReviewers(octokit, payload);
-  const totalReviewers = reviewers.length;
-  const validatedReviewers = reviewers.filter((r) => r.validated);
-  const reviewerNames = validatedReviewers
-    .map((r) => `✅ ${r.name}`)
-    .join("\n  ");
+  const totalReviewers = Object.entries(reviewers).length;
   const commentBody = messageForAddReviewer({
     totalReviewers,
-    reviewerNames,
+    reviewers,
     newReviewer: payload.requested_reviewer.login,
     totalFunds,
   });
+
+  try {
+    await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        issue_number: payload.pull_request.number,
+        body: commentBody,
+        headers: {
+          "x-github-api-version": "2022-11-28",
+        },
+      }
+    );
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+      );
+    }
+    console.error(error);
+  }
+}
+
+export async function handleReviewSubmission({ octokit, payload }) {
+  console.log(`Received a pr approval event`);
+
+  const totalFunds = await fetchProjectFunds();
+  const reviewers = await fetchReviewers(octokit, payload);
+  console.log('Reviewers:', reviewers);
+  
+  const totalReviewers = Object.entries(reviewers).length;
+
+  const { pull_request, review, repository } = payload;
+  console.log('Review:', review);
+  // Only process if we have all required information
+  if (!review || !pull_request || !repository) {
+    console.log("Missing required information in webhook payload");
+    return;
+  }
+
+  // Get review state and reviewer information
+  const reviewState = review.state.toUpperCase();
+  const reviewerName = review.user.login;
+  let commentBody;
+
+  switch (reviewState) {
+    case "APPROVED":
+      commentBody = messageForPRApproval({
+        totalReviewers,
+        reviewers,
+        reviewer: reviewerName,
+        totalFunds,
+      });
+      break;
+    case "CHANGES_REQUESTED":
+      commentBody = messageForPRDisapproval({
+        totalReviewers,
+        reviewers,
+        reviewer: reviewerName,
+        totalFunds,
+      });
+      break;
+    default:
+      return; // Don't post comment for other states
+  }
 
   try {
     await octokit.request(
