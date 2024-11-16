@@ -2,10 +2,11 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useWriteContract } from 'wagmi';
 
 import { abi } from '@/abi/FunDev.json';
+import { usePrivy } from '@privy-io/react-auth';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
 
@@ -15,6 +16,10 @@ interface IssueDetails {
 }
 
 const PageContent = () => {
+
+  const router = useRouter();
+  const { authenticated, ready } = usePrivy();
+
   const searchParams = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [fundingAmount, setFundingAmount] = useState('');
@@ -23,6 +28,14 @@ const PageContent = () => {
   const [issueDetails, setIssueDetails] = useState<IssueDetails | null>(null);
   const [repo, setRepo] = useState<string>('');
   const [issueId, setIssueId] = useState<number>(0);
+
+  useEffect(() => {
+    if (ready && !authenticated) {
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('redirectTo', currentPath);
+      router.push(`/login`);
+    }
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
     const urlParam = searchParams.get('url');
