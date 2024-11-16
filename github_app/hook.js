@@ -108,7 +108,7 @@ export async function handleReviewerAdd({ octokit, payload }) {
         },
       }
     );
-    const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+    const issuesFromPR = await fetchIssuesFromPR({owner: payload.repository.owner.login, repo: payload.repository.name, pr: payload.pull_request.number});
     if (issuesFromPR) {
       await octokit.request(
         "POST /repos/{owner}/{repo}/issues/" + issuesFromPR[0] + "/comments",
