@@ -7,6 +7,9 @@ import {createNodeMiddleware} from "@octokit/webhooks";
 import fs from "fs";
 import http from "http";
 import { handleIssuesCreated, handleClose, handlePullRequestOpened, handleReviewerAdd, handleReviewSubmission } from "./hook.js";
+import { watchContractEvent } from '@wagmi/core'
+import { abi } from './abi'
+import { config } from './config'
 
 // This reads your `.env` file and adds the variables from that file to the `process.env` object in Node.js.
 dotenv.config();
@@ -28,6 +31,53 @@ const app = new App({
     secret: webhookSecret
   },
 });
+
+// Watch contract event
+const contractAddress = '0x6b175474e89094c44da98b954eedeac495271d0f'
+
+// Issue created
+const issueCreated = watchContractEvent(config, {
+  address: contractAddress,
+  abi,
+  eventName: 'IssueCreated',
+  onLogs(logs) {
+    console.log('New logs!', logs)
+  },
+})
+issueCreated()
+
+// Issue updated
+const issueUpdated = watchContractEvent(config, {
+  address: contractAddress,
+  abi,
+  eventName: 'IssueUpdated',
+  onLogs(logs) {
+    console.log('New logs!', logs)
+  },
+})
+issueUpdated()
+
+// Issue validated
+const issueValidated = watchContractEvent(config, {
+  address: contractAddress,
+  abi,
+  eventName: 'IssueValidated',
+  onLogs(logs) {
+    console.log('New logs!', logs)
+  },
+})
+issueValidated()
+
+// Pull request approved
+const pullRequestApproved = watchContractEvent(config, {
+  address: contractAddress,
+  abi,
+  eventName: 'PullRequestApproved',
+  onLogs(logs) {
+    console.log('New logs!', logs)
+  },
+})
+pullRequestApproved()
 
 // This sets up a webhook event listener. When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined above.
 app.webhooks.on("pull_request.opened", handlePullRequestOpened);
