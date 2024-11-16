@@ -21,6 +21,7 @@ export async function handlePullRequestOpened({ octokit, payload }) {
   const totalFunds = await fetchProjectFunds();
   const devName = payload.repository.owner.login;
   const encodedURL = encodeURIComponent(payload.pull_request.issue_url);
+  const issuesFromPR = await fetchIssuesFromPR({owner: payload.repository.owner.login, repo: payload.repository.name, pr: payload.pull_request.number});
 
   // Generate the Markdown comment dynamically
   const commentBody = generatePullRequestCommentCreation({
@@ -29,6 +30,9 @@ export async function handlePullRequestOpened({ octokit, payload }) {
     totalFunds,
     devName,
     encodedURL,
+    issueId: issuesFromPR[0],
+    prId: payload.pull_request.number,
+    repo: payload.repository.name,
   });
 
   try {
