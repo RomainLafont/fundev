@@ -6,6 +6,7 @@ import {
   messageForPRDisapproval,
   messageForMerge,
   messageWarningLink,
+  messageSubmit,
 } from "./messages.js";
 import { fetchReviewers, fetchProjectFunds, fetchIssuesFromPR } from "./utils.js";
 
@@ -21,6 +22,7 @@ export async function handlePullRequestOpened({ octokit, payload }) {
   const totalFunds = await fetchProjectFunds();
   const devName = payload.repository.owner.login;
   const encodedURL = encodeURIComponent(payload.pull_request.issue_url);
+  const issuesFromPR = await fetchIssuesFromPR({owner: payload.repository.owner.login, repo: payload.repository.name, pr: payload.pull_request.number});
 
   // Generate the Markdown comment dynamically
   const commentBody = generatePullRequestCommentCreation({
@@ -29,6 +31,9 @@ export async function handlePullRequestOpened({ octokit, payload }) {
     totalFunds,
     devName,
     encodedURL,
+    issueId: issuesFromPR[0],
+    prId: payload.pull_request.number,
+    repo: payload.repository.name,
   });
 
   try {
@@ -247,6 +252,40 @@ export async function handleClose({ octokit, payload }) {
   console.log(`Received a close event`);
   if (payload.pull_request.merged) {
     handleMerge(octokit, payload)
+  }
+}
+
+export async function handlePRChange({ octokit, payload }) {
+  console.log(`Received a pr event`);
+  const issuesFromPR = await fetchIssuesFromPR({owner: payload.repository.owner.login, repo: payload.repository.name, pr: payload.pull_request.number});
+  const issueFromPR = issuesFromPR[0];
+  if (issueFromPR) {
+    const commentBody = messageSubmit({
+      issueId: issueFromPR,
+      prId: payload.pull_request.number,
+      repo: payload.repository.name,
+    });
+    try {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: commentBody,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    } catch (error) {
+      if (error.response) {
+        console.error(
+          `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+        );
+      }
+      console.error(error);
+    }
   }
 }
 
