@@ -257,7 +257,7 @@ export async function handleClose({ octokit, payload }) {
 
 export async function handlePRChange({ octokit, payload }) {
   console.log(`Received a pr event`);
-  const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+  const issuesFromPR = await fetchIssuesFromPR({owner: payload.repository.owner.login, repo: payload.repository.name, pr: payload.pull_request.number});
   if (issuesFromPR) {
     const commentBody = messageSubmit({
       issueId: issuesFromPR[0],
