@@ -169,7 +169,7 @@ const PageContent = () => {
     </div>
   );
 };
-
+/* 
 export function Page() {
   return (
     // You could have a loading skeleton as the `fallback` too
@@ -179,4 +179,4 @@ export function Page() {
   );
 }
 
-export default Page;
+export default Page; */
