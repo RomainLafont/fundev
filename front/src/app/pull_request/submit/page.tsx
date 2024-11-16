@@ -2,8 +2,6 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { GitPullRequest, GitFork, AlertCircle } from 'lucide-react';
 import { abi } from '@/abi/FunDev.json';
 import { useWriteContract } from 'wagmi';
