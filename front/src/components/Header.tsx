@@ -1,14 +1,15 @@
 'use client';
 
 import React from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useLogout, usePrivy } from '@privy-io/react-auth';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 const Header = () => {
 
   const router = useRouter();
-  const { login } = usePrivy();
+  const { login, authenticated } = usePrivy();
+  const { logout } = useLogout();
 
   return (
     <header className="flex items-center justify-between py-6 px-8">
@@ -23,9 +24,15 @@ const Header = () => {
           <li><a href="#" className="hover:text-gray-300" onClick={() => router.push('/issues')}>Issues</a></li>
         </ul>
       </nav>
-      <Button className={'capitalize'} onClick={login}>
-        Login
-      </Button>
+      {authenticated ?
+        <Button className={'capitalize'} onClick={logout}>
+          Logout
+        </Button>
+        :
+        <Button className={'capitalize'} onClick={login}>
+          Login
+        </Button>
+      }
     </header>
   );
 };
