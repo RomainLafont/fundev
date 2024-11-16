@@ -66,7 +66,7 @@ function generateJWT() {
   return jwt.sign(payload, privateKey, { algorithm: "RS256" });
 }
 
-async function getInstallationId(jwtToken, owner, repo) {
+async function getInstallationId({jwtToken, owner, repo}) {
   const url = `https://api.github.com/repos/${owner}/${repo}/installation`;
 
   try {
@@ -94,7 +94,7 @@ async function getInstallationId(jwtToken, owner, repo) {
 }
 
 async function getInstallationToken({jwtToken, owner, repo}) {
-  const INSTALLATION_ID = await getInstallationId(jwtToken, owner, repo);
+  const INSTALLATION_ID = await getInstallationId({jwtToken, owner, repo});
   const url = `https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`;
 
   try {
@@ -147,7 +147,7 @@ export async function fetchIssuesFromPR({owner, repo, pr}) {
   `;
   
   const jwtToken = generateJWT();
-  const installationToken = await getInstallationToken(jwtToken, owner, repo);
+  const installationToken = await getInstallationToken({jwtToken, owner, repo});
   try {
     const response = await fetch("https://api.github.com/graphql", {
       method: "POST",
@@ -168,7 +168,7 @@ export async function fetchIssuesFromPR({owner, repo, pr}) {
     data.data.resource.timelineItems.nodes.map((node) => {
       if (issues.hasOwnProperty(node.subject.number)) {
         issues[node.subject.number]++;
-      } else {
+      } else {utils.js
         issues[node.subject.number] = 1;
       }
     });
