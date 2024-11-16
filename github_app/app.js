@@ -6,6 +6,7 @@ import {App} from "octokit";
 import {createNodeMiddleware} from "@octokit/webhooks";
 import fs from "fs";
 import http from "http";
+import { handleIssuesCreated, handlePullRequestOpened } from "./hook.js";
 
 // This reads your `.env` file and adds the variables from that file to the `process.env` object in Node.js.
 dotenv.config();
@@ -26,54 +27,6 @@ const app = new App({
     secret: webhookSecret
   },
 });
-
-// This defines the message that your app will post to pull requests.
-const messageForNewPRs = "Thanks for opening a new PR! Please follow our contributing guidelines to make your PR easier to review.";
-const messageForNewIssue = "Congrats opening a new issue ! You can contribuate via this link";
-
-// This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the pull request that triggered the event.
-async function handlePullRequestOpened({octokit, payload}) {
-  console.log(`Received a pull request event for #${payload.pull_request.number}`);
-
-  try {
-    await octokit.request("POST /repos/{owner}/{repo}/issues/{issue_number}/comments", {
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      issue_number: payload.pull_request.number,
-      body: messageForNewPRs,
-      headers: {
-        "x-github-api-version": "2022-11-28",
-      },
-    });
-  } catch (error) {
-    if (error.response) {
-      console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`)
-    }
-    console.error(error)
-  }
-};
-
-// This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the issue that triggered the event.
-async function handleIssuesCreated({octokit, payload}) {
-  console.log(`Received a issue creation event for ${payload.repository.name}`);
-
-  try {
-    await octokit.request("POST /repos/{owner}/{repo}/issues/{payload.issue.number}/comments", {
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      issue_number: payload.issue.number,
-      body: messageForNewIssue,
-      headers: {
-        "x-github-api-version": "2022-11-28",
-      },
-    });
-  } catch (error) {
-    if (error.response) {
-      console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`)
-    }
-    console.error(error)
-  }
-};
 
 // This sets up a webhook event listener. When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined above.
 app.webhooks.on("pull_request.opened", handlePullRequestOpened);
