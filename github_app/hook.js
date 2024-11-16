@@ -6,6 +6,7 @@ import {
   messageForPRDisapproval,
   messageForMerge,
   messageWarningLink,
+  messageSubmit,
 } from "./messages.js";
 import { fetchReviewers, fetchProjectFunds, fetchIssuesFromPR } from "./utils.js";
 
@@ -251,6 +252,39 @@ export async function handleClose({ octokit, payload }) {
   console.log(`Received a close event`);
   if (payload.pull_request.merged) {
     handleMerge(octokit, payload)
+  }
+}
+
+export async function handlePRChange({ octokit, payload }) {
+  console.log(`Received a pr event`);
+  const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+  if (issuesFromPR) {
+    const commentBody = messageSubmit({
+      issueId: issuesFromPR[0],
+      prId: payload.pull_request.number,
+      repo: payload.repository.name,
+    });
+    try {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: commentBody,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    } catch (error) {
+      if (error.response) {
+        console.error(
+          `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+        );
+      }
+      console.error(error);
+    }
   }
 }
 

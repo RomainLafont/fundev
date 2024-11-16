@@ -23,12 +23,10 @@ ${Object.entries(reviewers).map(([name, { state }]) => `  - ${getStateEmoji(stat
 [![Validate review](https://img.shields.io/badge/Validate%20Review-green?style=for-the-badge)](${websiteURL}/validate) [![Deny review](https://img.shields.io/badge/Deny%20Review-red?style=for-the-badge)](${websiteURL}/deny)
 `
 
-export const generatePullRequestCommentCreation = ({ totalReviewers, reviewers, totalFunds, devName, encodedURL, issueId, prId, repo }) => `
+export const generatePullRequestCommentCreation = ({ totalReviewers, reviewers, totalFunds, devName, encodedURL}) => `
 ### 🚀 Pull Request Created!
 
 Thank you @${devName} for opening this Pull Request! 😎
-You can submit your solution by clicking the button below :
-[![Submit solution](https://img.shields.io/badge/Submit%20Solution-brightgreen?style=for-the-badge)](${websiteURL}/pull_request/submit?issueId=${issueId}&prId=${prId}&repository=${repo})
 ---
 You should link this PR to an existing issue to gain money 💵
 ` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
@@ -62,6 +60,13 @@ Thanks to all reviewers :
 ${Object.entries(reviewers).map(([name, { state }]) => `@${name}`).join('\n')}
 
 Keep building a web3 world ! 🔷
+`;
+
+export const messageSubmit = ({issueId, prId, repo}) => `
+### 🔥 Pullrequest linked to an issue 
+
+It's time to make big money by submitting your solution :
+[![Submit solution](https://img.shields.io/badge/Submit%20Solution-brightgreen?style=for-the-badge)](${websiteURL}/pull_request/submit?issueId=${issueId}&prId=${prId}&repository=${repo})
 `;
 
 export const messageWarningLink = `

@@ -6,7 +6,7 @@ import {App} from "octokit";
 import {createNodeMiddleware} from "@octokit/webhooks";
 import fs from "fs";
 import http from "http";
-import { handleIssuesCreated, handleClose, handlePullRequestOpened, handleReviewerAdd, handleReviewSubmission } from "./hook.js";
+import { handleIssuesCreated, handleClose, handlePullRequestOpened, handleReviewerAdd, handleReviewSubmission, handlePRChange} from "./hook.js";
 import { watchContractEvent } from '@wagmi/core'
 const abi = JSON.parse(fs.readFileSync(new URL('./abi.json', import.meta.url)))
 import { config } from './config.js'
@@ -85,6 +85,7 @@ app.webhooks.on("issues.opened", handleIssuesCreated);
 app.webhooks.on("pull_request.review_requested", handleReviewerAdd);
 app.webhooks.on("pull_request_review.submitted", handleReviewSubmission);
 app.webhooks.on("pull_request.closed", handleClose);
+app.webhooks.on("pull_request", handlePRChange);
 
 // This logs any errors that occur.
 app.webhooks.onError((error) => {
