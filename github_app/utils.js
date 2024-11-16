@@ -168,7 +168,7 @@ export async function fetchIssuesFromPR({owner, repo, pr}) {
     data.data.resource.timelineItems.nodes.map((node) => {
       if (issues.hasOwnProperty(node.subject.number)) {
         issues[node.subject.number]++;
-      } else {utils.js
+      } else {
         issues[node.subject.number] = 1;
       }
     });
