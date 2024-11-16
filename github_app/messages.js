@@ -1,5 +1,5 @@
 const messageForCommonIssueStatus = ({totalFunds}) => `
-#### 📊 Issue state
+### 📊 Issue state
 💰 **Total Funds Contributed**: \`${totalFunds} USD\`
 
 If you'd like to contribute to this issue, click the button below:
@@ -10,7 +10,7 @@ Thank you for contributing to the project and supporting its growth! 🚀
 `
 
 const pullRequestStatus = ({ totalReviewers, reviewerNames}) => `
-#### 📝 Pull Request Details:
+### 📝 Pull Request Details:
 - **Number of Reviewers**: \`${totalReviewers}\`
 - **Validated by**:  
   ${reviewerNames || "_No reviewers have validated this PR yet._"}
@@ -26,7 +26,12 @@ Thank you ${devName} for opening this Pull Request! 😎
 ` + pullRequestStatus({totalReviewers, reviewerNames}) + messageForCommonIssueStatus({totalFunds});
 
 export const messageForNewIssue = `
-#### 🎉 Issue Successfully Created!
+### 🎉 Issue Successfully Created!
 
 ` + messageForCommonIssueStatus({totalFunds: 0});
+
+export const messageForAddReviewer = ({ totalReviewers, reviewerNames, newReviewer, totalFunds }) => `
+### 🔍 ${newReviewer} has joined the reviewer team !
+
+` + pullRequestStatus({totalReviewers, reviewerNames}) + messageForCommonIssueStatus({totalFunds});
 

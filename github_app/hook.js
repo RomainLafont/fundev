@@ -1,6 +1,7 @@
 import {
   messageForNewIssue,
   generatePullRequestCommentCreation,
+  messageForAddReviewer,
 } from "./messages.js";
 import { fetchReviewers, fetchProjectFunds } from "./utils.js";
 
@@ -63,6 +64,46 @@ export async function handleIssuesCreated({ octokit, payload }) {
         repo: payload.repository.name,
         issue_number: payload.issue.number,
         body: messageForNewIssue,
+        headers: {
+          "x-github-api-version": "2022-11-28",
+        },
+      }
+    );
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+      );
+    }
+    console.error(error);
+  }
+}
+
+export async function handleReviewerAdd({ octokit, payload }) {
+  console.log(`Received a reviewer add event`);
+
+  const totalFunds = await fetchProjectFunds();
+  const reviewers = await fetchReviewers(octokit, payload);
+  const totalReviewers = reviewers.length;
+  const validatedReviewers = reviewers.filter((r) => r.validated);
+  const reviewerNames = validatedReviewers
+    .map((r) => `✅ ${r.name}`)
+    .join("\n  ");
+  const commentBody = messageForAddReviewer({
+    totalReviewers,
+    reviewerNames,
+    newReviewer: payload.requested_reviewer.login,
+    totalFunds,
+  });
+
+  try {
+    await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        issue_number: payload.pull_request.number,
+        body: commentBody,
         headers: {
           "x-github-api-version": "2022-11-28",
         },

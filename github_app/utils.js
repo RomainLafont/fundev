@@ -15,7 +15,7 @@ export async function fetchReviewers(octokit, payload) {
     ]);
     // Process reviewers to determine validation status
     const reviewers = requestedReviewers.data.users.map((user) => {
-      const hasValidated = reviews.some(
+      const hasValidated = reviews.data.some(
         (review) =>
           review.user.login === user.login && review.state === "APPROVED"
       );
