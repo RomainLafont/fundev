@@ -15,6 +15,7 @@ dotenv.config();
 const appId = process.env.APP_ID;
 const webhookSecret = process.env.WEBHOOK_SECRET;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+export const websiteURL = process.env.WEBSITE_URL;
 
 // This reads the contents of your private key file.
 const privateKey = fs.readFileSync(privateKeyPath, "utf8");
