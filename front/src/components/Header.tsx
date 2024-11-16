@@ -8,8 +8,12 @@ import { useRouter } from 'next/navigation';
 const Header = () => {
 
   const router = useRouter();
-  const { login, authenticated } = usePrivy();
+  const { login, authenticated, user } = usePrivy();
   const { logout } = useLogout();
+
+  const truncateAddress = (address: string): string => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   return (
     <header className="flex items-center justify-between py-6 px-8">
@@ -24,15 +28,22 @@ const Header = () => {
           <li><a href="#" className="hover:text-gray-300" onClick={() => router.push('/issues')}>Issues</a></li>
         </ul>
       </nav>
-      {authenticated ?
-        <Button className={'capitalize'} onClick={logout}>
-          Logout
-        </Button>
-        :
-        <Button className={'capitalize'} onClick={login}>
-          Login
-        </Button>
-      }
+      <div className="flex items-center space-x-4">
+        {authenticated && user?.wallet?.address && (
+          <span className="text-sm text-gray-500">
+            {truncateAddress(user.wallet.address)}
+          </span>
+        )}
+        {authenticated ? (
+          <Button className={'capitalize'} onClick={logout}>
+            Logout
+          </Button>
+        ) : (
+          <Button className={'capitalize'} onClick={login}>
+            Login
+          </Button>
+        )}
+      </div>
     </header>
   );
 };
