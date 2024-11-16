@@ -1,24 +1,58 @@
 import { create } from 'zustand';
+import { uuidv4 } from '@walletconnect/utils';
 
-interface EventsState {
-  events: Event[];
-  addEvent: (event: Event) => void;
-  clearEvents: () => void;
+export interface Issue {
+  id: string;
+  repo: string;
+  githubId: string;
+  funds: Fund[];
+  // Add more properties as needed
 }
 
-const useEventsStore = create<EventsState>((set) => ({
-  events: [],
-  addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
-  clearEvents: () => set({ events: [] }),
+export interface Fund {
+  issueId: string;
+  repo: string;
+  amount: number;
+  // Add more properties as needed
+}
+
+interface IssuesState {
+  issues: Issue[];
+  fundIssue: (fund: Fund) => void;
+}
+
+const useIssuesStore = create<IssuesState>((set) => ({
+  issues: [],
+  fundIssue: (fund: Fund) => set((state) => {
+
+    let issue = state.issues.find((issue) => issue.id === fund.issueId);
+    if (!issue) {
+      issue = {
+        id: uuidv4(),
+        repo: fund.repo,
+        githubId: fund.issueId,
+        funds: [],
+      };
+      state.issues.push(issue);
+    }
+
+    const updatedIssues = state.issues.map((issue) => {
+      if (issue.id === fund.issueId) {
+        return { ...issue, funds: [...issue.funds, fund] };
+      }
+      return issue;
+    });
+    return { issues: updatedIssues };
+  }),
 }));
 
-export const useEventsContext = () => {
-  const { events, addEvent, clearEvents } = useEventsStore();
+export const useIssuesContext = () => {
+  const { issues, fundIssue } = useIssuesStore();
 
   // Wagmi hook to fetch events will be added here
 
   return {
-    events,
-    clearEvents,
+    issues,
+    fundIssue,
   };
 };
