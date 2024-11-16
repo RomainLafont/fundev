@@ -36,7 +36,6 @@ contract FunDev is Ownable(msg.sender) {
 
     event IssueCreated(string repoName, uint256 issueId, uint256 initialAmount);
     event IssueUpdated(string repoName, uint256 issueId, uint256 issueBalance);
-    event IssueValidated(string repoName, uint256 issueId);
 
     event PullRequestCreated(string repoName, uint256 issueId, uint256 pullRequestId, address proposer);
     event ValidatorAdded(address indexed validator, uint256 stakedAmount);
@@ -47,7 +46,7 @@ contract FunDev is Ownable(msg.sender) {
     event ValidatorWithdrawn(address indexed validator, uint256 amount);
     event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
 
-    address public constant USDC_TOKEN = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // Mainnet USDC address
+    address public constant USDC_TOKEN = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Mainnet USDC address
     IERC20 public immutable usdc;
 
     constructor() {
