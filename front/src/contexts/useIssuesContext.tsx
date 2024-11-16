@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { uuidv4 } from '@walletconnect/utils';
 import { useWatchContractEvent } from 'wagmi';
+import { abi } from '@/abi/FunDev.json';
 
 export interface Issue {
   id: string;
@@ -47,9 +48,7 @@ const useIssuesStore = create<IssuesState>((set) => ({
   }),
 }));
 
-const CONTRACT_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f';
-const START_BLOCK = BigInt(1);
-const abi = undefined;
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
 
 export const useIssuesContext = () => {
   const { issues, fundIssue } = useIssuesStore();
@@ -57,16 +56,9 @@ export const useIssuesContext = () => {
   useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi,
-    fromBlock: START_BLOCK,
-    eventName: 'IssueFunded',
+    eventName: 'IssueCreated',
     onLogs(logs) {
-      logs.forEach((log) => {
-        // fundIssue({
-        //   issueId: log.args.issueId,
-        //   repo: log.args.repo,
-        //   amount: log.args.amount,
-        // });
-      });
+      console.log('new logs:', logs);
     },
   });
 
