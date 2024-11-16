@@ -13,7 +13,9 @@
   "description": "",
   "dependencies": {
     "@tanstack/react-query": "^5.60.5",
+    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
     "octokit": "^4.0.2",
     "viem": "^2.21.45",
     "wagmi": "^2.12.33"

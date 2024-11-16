@@ -1,3 +1,7 @@
+import fs from "fs";
+import jwt from "jsonwebtoken";
+import axios from "axios";
+
 export async function fetchReviewers(octokit, payload) {
   try {
     // Fetch both requested reviewers and actual reviews
@@ -49,9 +53,76 @@ export async function fetchReviewers(octokit, payload) {
   }
 }
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+function generateJWT() {
+  const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+  const privateKey = fs.readFileSync(privateKeyPath, "utf8");
+
+  const payload = {
+    iat: Math.floor(Date.now() / 1000) - 60, // Issued at time, 60 seconds ago
+    exp: Math.floor(Date.now() / 1000) + 600, // Expires in 10 minutes
+    iss: process.env.APP_ID, // App ID
+  };
+
+  return jwt.sign(payload, privateKey, { algorithm: "RS256" });
+}
+
+async function getInstallationToken(jwtToken) {
+  const INSTALLATION_ID = "57205356";
+  const url = `https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`;
+
+  try {
+    const response = await axios.post(
+      url,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+
+    const installationToken = response.data.token;
+    console.log("Installation Token:", installationToken);
+    return installationToken;
+  } catch (error) {
+    console.error("Error fetching installation token:", error.response.data);
+  }
+}
+
+async function makeGraphQLRequest(installationToken) {
+  const graphqlUrl = "https://api.github.com/graphql";
+
+  const query = `
+    query {
+      repository(owner: "OWNER", name: "REPO") {
+        name
+        description
+        stargazerCount
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(
+      graphqlUrl,
+      { query },
+      {
+        headers: {
+          Authorization: `Bearer ${installationToken}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+
+    console.log("GraphQL Response:", response.data);
+  } catch (error) {
+    console.error("Error making GraphQL request:", error.response.data);
+  }
+}
 
 export async function fetchIssuesFromPR({owner, repo, pr}) {
+  console.log("PARAMETERS" , owner, repo, pr);
   const query = `{
     resource(url: "https://github.com/${owner}/${repo}/pull/${pr}") {
       ... on PullRequest {
@@ -79,16 +150,19 @@ export async function fetchIssuesFromPR({owner, repo, pr}) {
     }
   }
   `;
-
+  
+  const jwtToken = generateJWT();
+  const installationToken = await getInstallationToken(jwtToken);
   try {
     const response = await fetch("https://api.github.com/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Authorization: `Bearer ${installationToken}`,
       },
       body: JSON.stringify({query}),
     });
+
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
