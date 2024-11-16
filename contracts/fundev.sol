@@ -47,7 +47,7 @@ contract FunDev is Ownable(msg.sender) {
     event ValidatorWithdrawn(address indexed validator, uint256 amount);
     event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
 
-    address public constant USDC_TOKEN = 0x19a0870a66B305BE9917c0F14811C970De18E6fC; // Mainnet USDC address
+    address public constant USDC_TOKEN = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // Mainnet USDC address
     IERC20 public immutable usdc;
 
     constructor() {
