@@ -1,11 +1,11 @@
-import { createConfig, http } from 'wagmi';
-import { baseSepolia, sepolia } from 'wagmi/chains';
+import { http } from 'wagmi';
+import { foundry } from 'wagmi/chains';
+import { createConfig } from '@privy-io/wagmi';
 
 export const config = createConfig({
-  chains: [baseSepolia, sepolia],
+  chains: [foundry],
   transports: {
-    [baseSepolia.id]: http(),
-    [sepolia.id]: http(),
+    [foundry.id]: http(),
   },
 });
 

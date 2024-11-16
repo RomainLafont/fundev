@@ -3,10 +3,11 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useWriteContract } from 'wagmi';
+import { BaseError, useWriteContract } from 'wagmi';
 
 import { abi } from '@/abi/FunDev.json';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
 
@@ -19,11 +20,12 @@ const PageContent = () => {
 
   const router = useRouter();
   const { authenticated, ready } = usePrivy();
+  const { wallets } = useWallets();
 
   const searchParams = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [fundingAmount, setFundingAmount] = useState('');
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [showFundingAmount, setShowFundingAmount] = useState(false);
   const [issueDetails, setIssueDetails] = useState<IssueDetails | null>(null);
   const [repo, setRepo] = useState<string>('');
@@ -51,7 +53,7 @@ const PageContent = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
-    setError('');
+    setErrorMessage('');
     setIssueDetails(null);
     setShowFundingAmount(false);
   };
@@ -88,31 +90,32 @@ const PageContent = () => {
         setIssueDetails(details);
         setShowFundingAmount(true);
       } else {
-        setError('Failed to fetch issue details');
+        setErrorMessage('Failed to fetch issue details');
       }
     } else {
-      setError('Invalid GitHub issue URL format');
+      setErrorMessage('Invalid GitHub issue URL format');
     }
   };
 
-  const { writeContract } = useWriteContract();
+
+  const { setActiveWallet } = useSetActiveWallet();
+  
+  const { data: hash, error, writeContract } = useWriteContract();
 
   const handleCreateFunding = async () => {
+    if (!wallets.length) {
+      setErrorMessage('Please connect your wallet first.');
+      return;
+    }
 
     if (writeContract) {
-      try {
-        writeContract({
-          address: CONTRACT_ADDRESS,
-          abi,
-          functionName: 'createIssue', // Replace with your actual function name
-          args: [repo, issueId, fundingAmount],
-        });
-        console.log('Transaction sent');
-        // Handle successful transaction
-      } catch (error) {
-        console.error('Error creating funding:', error);
-        // Handle error
-      }
+      writeContract({
+        address: CONTRACT_ADDRESS,
+        abi,
+        functionName: 'createIssue',
+        args: [repo, issueId, fundingAmount],
+      });
+      console.log('Transaction sent');
     }
   };
 
@@ -141,7 +144,7 @@ const PageContent = () => {
             Next
           </Button>
         </div>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+        {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
       </form>
 
       {issueDetails && (<>
@@ -176,6 +179,10 @@ const PageContent = () => {
               Create Funding
             </Button>
           </div>
+          {hash && <div>Transaction Hash: {hash}</div>}
+          {error && (
+            <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+          )}
         </div>
       )}
     </div>

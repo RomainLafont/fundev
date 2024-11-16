@@ -2,9 +2,9 @@
 
 import { PrivyProvider } from '@privy-io/react-auth';
 import { config as envConfig } from 'dotenv';
-import { WagmiProvider } from 'wagmi';
 import { config } from '@/app/config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider } from '@privy-io/wagmi';
 
 // Charger les variables d'environnement depuis le fichier .env
 envConfig();
