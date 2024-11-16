@@ -57,7 +57,7 @@ export async function handlePullRequestOpened({ octokit, payload }) {
 // This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the issue that triggered the event.
 export async function handleIssuesCreated({ octokit, payload }) {
   console.log(`Received a issue creation event for ${payload.repository.name}`);
-  const encodedURL = encodeURIComponent(payload.issue.url);
+  const encodedURL = encodeURIComponent(payload.issue.html_url);
   try {
     await octokit.request(
       "POST /repos/{owner}/{repo}/issues/" + payload.issue.number + "/comments",
