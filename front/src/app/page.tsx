@@ -3,9 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function Home() {
-  
+
   const router = useRouter();
   const { ready, authenticated } = usePrivy();
 
@@ -23,7 +24,7 @@ export default function Home() {
   return (
     <article className="text-center">
       <div className="flex justify-center">
-        <img src={'images/logo.png'} alt={'Fundev'} className="w-1/2 max-w-xs" />
+        <Image src={'images/logo.png'} alt={'Fundev'} className="w-1/2 max-w-xs" />
       </div>
       <h1 className="text-6xl mb-3">Fundev</h1>
       <p className="text-3xl mb-16">

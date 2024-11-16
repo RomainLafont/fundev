@@ -169,14 +169,14 @@ const PageContent = () => {
     </div>
   );
 };
-/* 
-export function Page() {
+
+const Page = () => {
   return (
     // You could have a loading skeleton as the `fallback` too
     <Suspense>
       <PageContent />
     </Suspense>
   );
-}
+};
 
-export default Page; */
+export default Page;
