@@ -27,8 +27,11 @@ Ensure the following tools are installed on your system:
    ```bash
    npm install
    ```
+3. Get private key for github app:
+    Go to Github > Profile > Settings > Developper settings > GitHub App > fundev 
+    Generate a private key.
 
-3. Create a .env file at the root of the project and add the following variables:
+4. Create a .env file at the root of the project and add the following variables:
 
     APP_ID="YOUR_APP_ID"
     WEBHOOK_SECRET="YOUR_WEBHOOK_SECRET"
