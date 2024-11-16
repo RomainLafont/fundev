@@ -27,7 +27,7 @@ contract FunDev is Ownable(msg.sender) {
         mapping(address => bool) approvals;
     }
 
-    uint256 numberOfPr;
+    uint256 numberOfPr = 0;
     mapping(uint256 => PullRequest) private pullRequests; // prIndex --> pull request
     mapping(string => mapping(uint256 => Issue)) private issues; // repoName --> issue ID --> issue
 
@@ -40,13 +40,14 @@ contract FunDev is Ownable(msg.sender) {
 
     event PullRequestCreated(string repoName, uint256 issueId, uint256 pullRequestId, address proposer);
     event ValidatorAdded(address indexed validator, uint256 stakedAmount);
+    event ValidatorStakeUpdated(address indexed validator, uint256 stakedAmount);
     event PullRequestApproved(string repoName, uint256 issueId, uint256 pullRequestId, address validator);
     event PullRequestUnapproved(string repoName, uint256 issueId, uint256 pullRequestId, address validator);
     event ValidatorSlashed(address validator, uint256 slashedAmount);
     event ValidatorWithdrawn(address indexed validator, uint256 amount);
     event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
 
-    address public constant USDC_TOKEN = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // Mainnet USDC address
+    address public constant USDC_TOKEN = 0x19a0870a66B305BE9917c0F14811C970De18E6fC; // Mainnet USDC address
     IERC20 public immutable usdc;
 
     constructor() {
@@ -141,9 +142,14 @@ contract FunDev is Ownable(msg.sender) {
         uint256 validationsCount = pullRequests[prIndex].validationsCount;
         bool approval = pullRequests[prIndex].approvals[msg.sender];
 
-        require(approval != true, "Validator already approved");
-
-        if (approval == false) {
+        bool alreadyValidator = false;
+        for (uint256 i = 0; i < pullRequests[prIndex].validators.length; i++) {
+            if (pullRequests[prIndex].validators[i] == msg.sender) {
+                alreadyValidator = true;
+                require(approval != true, "Validator has already approved");
+            }
+        }
+        if (alreadyValidator && approval == false) {
             approvalsCount += 2;
         } else {
             validationsCount += 1;
@@ -153,10 +159,11 @@ contract FunDev is Ownable(msg.sender) {
 
         pullRequests[prIndex].approvals[msg.sender] = true;
         pullRequests[prIndex].approvalsCount = approvalsCount;
-
+        pullRequests[prIndex].validationsCount = validationsCount;
+        
         emit PullRequestApproved(repoName, issueId, pullRequestId, msg.sender);
 
-        if (approvalsCount >= 3 && (approvalsCount * 100 / validationsCount) >= 80) {
+        if (approvalsCount >= 3 && ((approvalsCount * 100) >= (80 * validationsCount))) {
            _completePullRequest(repoName, issueId, pullRequestId);
       }
     }
@@ -174,24 +181,30 @@ contract FunDev is Ownable(msg.sender) {
         uint256 validationsCount = pullRequests[prIndex].validationsCount;
         bool approval = pullRequests[prIndex].approvals[msg.sender];
 
-        require(approval != false, "Validator has already unapproved");
+        bool alreadyValidator = false;
+        for (uint256 i = 0; i < pullRequests[prIndex].validators.length; i++) {
+            if (pullRequests[prIndex].validators[i] == msg.sender) {
+                alreadyValidator = true;
+                require(approval != false, "Validator has already unapproved");
+            }
+        }
 
-        if (approval == true) {
-            approvalsCount -= 2;
+        if (alreadyValidator && approval == true) {
+            approvalsCount -= 1;
         } else {
             validationsCount += 1;
-            approvalsCount -= 1;
             pullRequests[prIndex].validators.push(msg.sender);
         }
 
         pullRequests[prIndex].approvals[msg.sender] = false;
         pullRequests[prIndex].approvalsCount = approvalsCount;
+        pullRequests[prIndex].validationsCount = validationsCount;
 
         emit PullRequestUnapproved(repoName, issueId, pullRequestId, msg.sender);
 
         // Check if enough validators have unapproved
         uint256 unapprovalCount = validationsCount - approvalsCount;
-        if (unapprovalCount >= 3 && (unapprovalCount * 100 / validationsCount) >= 80) {
+        if (unapprovalCount >= 3 && ((unapprovalCount * 100) >= (80 * validationsCount))) {
             _rejectPullRequest(repoName, issueId, pullRequestId);
         }
     }
@@ -309,6 +322,17 @@ contract FunDev is Ownable(msg.sender) {
         require(usdc.transfer(msg.sender, amount), "USDC transfer failed");
         
         emit ValidatorWithdrawn(msg.sender, amount);
+    }
+
+    function addValidatorStake(uint256 additionalStake) external {
+        require(isValidator[msg.sender], "Not a validator");
+        require(additionalStake > 0, "Amount must be greater than 0");
+        
+        require(usdc.transferFrom(msg.sender, address(this), additionalStake), "USDC transfer failed");
+        
+        validators[msg.sender] += additionalStake;
+        
+        emit ValidatorStakeUpdated(msg.sender, additionalStake);
     }
 
     function withdrawProtocolFees(address to, uint256 amount) external onlyOwner {
