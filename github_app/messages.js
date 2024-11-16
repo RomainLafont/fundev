@@ -30,7 +30,7 @@ Thank you @${devName} for opening this Pull Request! 😎
 You can submit your solution by clicking the button below :
 [![Submit solution](https://img.shields.io/badge/Submit%20Solution-brightgreen?style=for-the-badge)](${websiteURL}/submit)
 ---
-
+You should link this PR to an existing issue to gain money 💵
 ` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
 
 export const messageForNewIssue = (encodedURL) => `
@@ -64,6 +64,11 @@ ${Object.entries(reviewers).map(([name, { state }]) => `@${name}`).join('\n')}
 Keep building a web3 world ! 🔷
 `;
 
+export const messageWarningLink = `
+### ⚠️ No Issue linked to this PR ! 
+
+You should link an Issue to this PR otherwise you won't be able to claim any money 😥
+`;
 
 const getStateEmoji = (state) => {
   switch(state.toUpperCase()) {

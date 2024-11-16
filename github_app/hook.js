@@ -5,8 +5,9 @@ import {
   messageForPRApproval,
   messageForPRDisapproval,
   messageForMerge,
+  messageWarningLink,
 } from "./messages.js";
-import { fetchReviewers, fetchProjectFunds } from "./utils.js";
+import { fetchReviewers, fetchProjectFunds, fetchIssuesFromPR } from "./utils.js";
 
 // This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the pull request that triggered the event.
 export async function handlePullRequestOpened({ octokit, payload }) {
@@ -56,9 +57,7 @@ export async function handlePullRequestOpened({ octokit, payload }) {
 // This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the issue that triggered the event.
 export async function handleIssuesCreated({ octokit, payload }) {
   console.log(`Received a issue creation event for ${payload.repository.name}`);
-  console.log(payload.issue.url);
   const encodedURL = encodeURIComponent(payload.issue.url);
-  console.log(encodedURL)
   try {
     await octokit.request(
       "POST /repos/{owner}/{repo}/issues/" + payload.issue.number + "/comments",
@@ -84,7 +83,6 @@ export async function handleIssuesCreated({ octokit, payload }) {
 
 export async function handleReviewerAdd({ octokit, payload }) {
   console.log(`Received a reviewer add event`);
-
   const totalFunds = await fetchProjectFunds();
   const reviewers = await fetchReviewers(octokit, payload);
   const totalReviewers = Object.entries(reviewers).length;
@@ -110,6 +108,34 @@ export async function handleReviewerAdd({ octokit, payload }) {
         },
       }
     );
+    const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+    if (issuesFromPR) {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/" + issuesFromPR[0] + "/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: commentBody,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    } else {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: messageWarningLink,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    }
   } catch (error) {
     if (error.response) {
       console.error(
@@ -179,6 +205,34 @@ export async function handleReviewSubmission({ octokit, payload }) {
         },
       }
     );
+    const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+    if (issuesFromPR) {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/" + issuesFromPR[0] + "/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: commentBody,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    } else {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: messageWarningLink,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    }
   } catch (error) {
     if (error.response) {
       console.error(
@@ -221,6 +275,21 @@ export async function handleMerge({ octokit, payload }) {
         },
       }
     );
+    const issuesFromPR = await fetchIssuesFromPR(payload.repository.owner.login, payload.repository.name, payload.pull_request.number);
+    if (issuesFromPR) {
+      await octokit.request(
+        "POST /repos/{owner}/{repo}/issues/" + issuesFromPR[0] + "/comments",
+        {
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: commentBody,
+          headers: {
+            "x-github-api-version": "2022-11-28",
+          },
+        }
+      );
+    }
   } catch (error) {
     if (error.response) {
       console.error(
