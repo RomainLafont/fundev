@@ -6,7 +6,7 @@ import {App} from "octokit";
 import {createNodeMiddleware} from "@octokit/webhooks";
 import fs from "fs";
 import http from "http";
-import { handleIssuesCreated, handlePullRequestOpened, handleReviewerAdd } from "./hook.js";
+import { handleIssuesCreated, handlePullRequestOpened, handleReviewerAdd, handleReviewSubmission } from "./hook.js";
 
 // This reads your `.env` file and adds the variables from that file to the `process.env` object in Node.js.
 dotenv.config();
@@ -15,6 +15,7 @@ dotenv.config();
 const appId = process.env.APP_ID;
 const webhookSecret = process.env.WEBHOOK_SECRET;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+export const websiteURL = process.env.WEBSITE_URL;
 
 // This reads the contents of your private key file.
 const privateKey = fs.readFileSync(privateKeyPath, "utf8");
@@ -32,6 +33,7 @@ const app = new App({
 app.webhooks.on("pull_request.opened", handlePullRequestOpened);
 app.webhooks.on("issues.opened", handleIssuesCreated);
 app.webhooks.on("pull_request.review_requested", handleReviewerAdd);
+app.webhooks.on("pull_request_review.submitted", handleReviewSubmission);
 
 // This logs any errors that occur.
 app.webhooks.onError((error) => {

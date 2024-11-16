@@ -36,11 +36,13 @@ Ensure the following tools are installed on your system:
     APP_ID="YOUR_APP_ID"
     WEBHOOK_SECRET="YOUR_WEBHOOK_SECRET"
     PRIVATE_KEY_PATH="YOUR_PRIVATE_KEY_PATH"
+    WEBSITE_URL="YOUR_WEBSITE_URL"
 
     Replace the placeholder values (YOUR_APP_ID, YOUR_WEBHOOK_SECRET, YOUR_PRIVATE_KEY_PATH) with the appropriate credentials:
         APP_ID: Obtain the App ID from your GitHub App's settings.
         WEBHOOK_SECRET: Set a secret value for validating incoming webhook events.
         PRIVATE_KEY_PATH: Path to your GitHub App's private key file (e.g., ./private-key.pem).
+        WEBSITE_URL: Url to your website.
 
 ## Testing Locally
 
