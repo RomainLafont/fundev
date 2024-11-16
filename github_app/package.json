@@ -12,8 +12,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@tanstack/react-query": "^5.60.5",
     "dotenv": "^16.4.5",
-    "octokit": "^4.0.2"
+    "octokit": "^4.0.2",
+    "viem": "^2.21.45",
+    "wagmi": "^2.12.33"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

@@ -1,14 +1,15 @@
 import dotenv from "dotenv";
 
 dotenv.config();
+const websiteURL = process.env.WEBSITE_URL;
 
-const messageForCommonIssueStatus = ({totalFunds}) => `
+const messageForCommonIssueStatus = ({totalFunds, encodedURL}) => `
 ### 📊 Issue state
 💰 **Total Funds Contributed**: \`${totalFunds} USD\`
 
 If you'd like to contribute to this issue, click the button below:
 
-[![Contribute](https://img.shields.io/badge/Contribute-Click%20Here-purple?style=for-the-badge)](${websiteURL}/fund)
+[![Contribute](https://img.shields.io/badge/Contribute-Click%20Here-purple?style=for-the-badge)](${websiteURL}/fund/new?url=${encodedURL})
 
 Thank you for contributing to the project and supporting its growth! 🚀  
 `
@@ -19,10 +20,10 @@ const pullRequestStatus = ({ totalReviewers, reviewers}) => `
 - **Review status**:  
 ${Object.entries(reviewers).map(([name, { state }]) => `  - ${getStateEmoji(state)} @${name}: \`${state}\``).join('\n')}
 [![Become a reviewer](https://img.shields.io/badge/Become%20a%20Reviewer-blue?style=for-the-badge)](${websiteURL}/review)
-[![Validate review](https://img.shields.io/badge/Validate%20Review-green?style=for-the-badge)](${websiteURL}/validate)
+[![Validate review](https://img.shields.io/badge/Validate%20Review-green?style=for-the-badge)](${websiteURL}/validate) [![Deny review](https://img.shields.io/badge/Deny%20Review-red?style=for-the-badge)](${websiteURL}/deny)
 `
 
-export const generatePullRequestCommentCreation = ({ totalReviewers, reviewers, totalFunds, devName }) => `
+export const generatePullRequestCommentCreation = ({ totalReviewers, reviewers, totalFunds, devName, encodedURL }) => `
 ### 🚀 Pull Request Created!
 
 Thank you @${devName} for opening this Pull Request! 😎
@@ -30,27 +31,38 @@ You can submit your solution by clicking the button below :
 [![Submit solution](https://img.shields.io/badge/Submit%20Solution-brightgreen?style=for-the-badge)](${websiteURL}/submit)
 ---
 
-` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds});
+` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
 
-export const messageForNewIssue = `
+export const messageForNewIssue = (encodedURL) => `
 ### 🎉 Issue Successfully Created!
 
-` + messageForCommonIssueStatus({totalFunds: 0});
+` + messageForCommonIssueStatus({totalFunds: 0, encodedURL});
 
-export const messageForAddReviewer = ({ totalReviewers, reviewers, newReviewer, totalFunds }) => `
+export const messageForAddReviewer = ({ totalReviewers, reviewers, newReviewer, totalFunds, encodedURL }) => `
 ### 🔍 @${newReviewer} has joined the reviewer team !
 
-` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds});
+` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
 
-export const messageForPRApproval = ({ totalReviewers, reviewers, reviewer, totalFunds }) => `
+export const messageForPRApproval = ({ totalReviewers, reviewers, reviewer, totalFunds, encodedURL }) => `
 ### ✅ @${reviewer} has approved the pull request !
 
-` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds});
+` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
 
-export const messageForPRDisapproval = ({ totalReviewers, reviewers, reviewer, totalFunds }) => `
+export const messageForPRDisapproval = ({ totalReviewers, reviewers, reviewer, totalFunds, encodedURL }) => `
 ### 🚫 @${reviewer} has disapproved the pull request !
 
-` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds});
+` + pullRequestStatus({ totalReviewers, reviewers}) + messageForCommonIssueStatus({totalFunds, encodedURL});
+
+export const messageForMerge = ({ reviewers, author, totalFunds }) => `
+### 🎉 Pullrequest Successfully Merged!
+
+Congrats @${author} for your success ! 
+Your efforts made you earn **${totalFunds} USD** 💵
+Thanks to all reviewers : 
+${Object.entries(reviewers).map(([name, { state }]) => `@${name}`).join('\n')}
+
+Keep building a web3 world ! 🔷
+`;
 
 
 const getStateEmoji = (state) => {
@@ -63,4 +75,3 @@ const getStateEmoji = (state) => {
   }
 };
 
-const websiteURL = process.env.WEBSITE_URL;
