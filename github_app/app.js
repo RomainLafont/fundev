@@ -8,8 +8,8 @@ import fs from "fs";
 import http from "http";
 import { handleIssuesCreated, handleClose, handlePullRequestOpened, handleReviewerAdd, handleReviewSubmission } from "./hook.js";
 import { watchContractEvent } from '@wagmi/core'
-import { abi } from './abi'
-import { config } from './config'
+const abi = JSON.parse(fs.readFileSync(new URL('./abi.json', import.meta.url)))
+import { config } from './config.js'
 
 // This reads your `.env` file and adds the variables from that file to the `process.env` object in Node.js.
 dotenv.config();
