@@ -66,8 +66,35 @@ function generateJWT() {
   return jwt.sign(payload, privateKey, { algorithm: "RS256" });
 }
 
-async function getInstallationToken(jwtToken) {
-  const INSTALLATION_ID = "57240849";
+async function getInstallationId(jwtToken, owner, repo) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/installation`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${jwtToken}`, // Use your JWT
+        "Accept": "application/vnd.github+json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error fetching installation ID:", error);
+      throw new Error(error.message);
+    }
+
+    const data = await response.json();
+    console.log("Installation Details:", data);
+    return data.id; // This is the installation_id
+  } catch (error) {
+    console.error("Failed to get installation ID:", error);
+    throw error;
+  }
+}
+
+async function getInstallationToken({jwtToken, owner, repo}) {
+  const INSTALLATION_ID = await getInstallationId(jwtToken, owner, repo);
   const url = `https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`;
 
   try {
@@ -83,7 +110,6 @@ async function getInstallationToken(jwtToken) {
     );
 
     const installationToken = response.data.token;
-    console.log("Installation Token:", installationToken);
     return installationToken;
   } catch (error) {
     console.error("Error fetching installation token:", error.response.data);
@@ -121,7 +147,7 @@ export async function fetchIssuesFromPR({owner, repo, pr}) {
   `;
   
   const jwtToken = generateJWT();
-  const installationToken = await getInstallationToken(jwtToken);
+  const installationToken = await getInstallationToken(jwtToken, owner, repo);
   try {
     const response = await fetch("https://api.github.com/graphql", {
       method: "POST",
