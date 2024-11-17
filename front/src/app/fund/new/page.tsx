@@ -212,7 +212,19 @@ const PageContent = () => {
               Create Funding
             </Button>
           </div>
-          {hash && <div>Transaction Hash: {hash}</div>}
+          {hash && (
+            <div>
+              Transaction Hash:{' '}
+              <a 
+                href={`https://sepolia.basescan.org/tx/${hash}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700 underline"
+              >
+                View on BaseScan
+              </a>
+            </div>
+          )}
           {error && (
             <div>Error: {(error as BaseError).shortMessage || error.message}</div>
           )}
