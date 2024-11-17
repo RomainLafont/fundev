@@ -31,6 +31,7 @@ const PageContent = () => {
   const [issueDetails, setIssueDetails] = useState<IssueDetails | null>(null);
   const [repo, setRepo] = useState<string>('');
   const [issueId, setIssueId] = useState<number>(0);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const [showPopup, setShowPopup] = useState(false);
 
@@ -46,6 +47,7 @@ const PageContent = () => {
     const urlParam = searchParams.get('url');
     if (urlParam) {
       setInputValue(urlParam);
+      setIsSuccess(false);
     }
   }, [searchParams]);
 
@@ -140,14 +142,15 @@ const PageContent = () => {
           },
         ],
         functionName: 'approve',
-        args: [CONTRACT_ADDRESS, BigInt(Number(fundingAmount) * 6)],
+        args: [CONTRACT_ADDRESS, BigInt(Number(fundingAmount) * 6 ^ 10)],
       });
       writeContract({
         address: CONTRACT_ADDRESS,
         abi,
         functionName: 'createIssue',
-        args: [repo, BigInt(issueId), BigInt(Number(fundingAmount) * 6)],
+        args: [repo, BigInt(issueId), BigInt(Number(fundingAmount) * 6 ^ 10)],
       });
+      setIsSuccess(true);
       console.log('Transaction sent');
     }
   };
@@ -155,69 +158,98 @@ const PageContent = () => {
   return (
     <div>
       <h2 className="text-5xl text-center font-bold mb-8">New funding</h2>
-
-      <p className="mb-2">Copy github issue link and paste here to create a funding on it</p>
-      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-2 w-full">
-        <div className="flex items-center gap-2 w-full">
-          <input
-            type="url"
-            id="githubIssueUrl"
-            name="githubIssueUrl"
-            placeholder="GitHub Issue URL"
-            required
-            className="w-2/3 p-2 border rounded"
-            value={inputValue}
-            onChange={handleInputChange}
-          />
-          <Button
-            type="submit"
-            className="w-1/3"
-            disabled={showFundingAmount}
-          >
-            Next
-          </Button>
-        </div>
-        {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
-      </form>
-
-      {issueDetails && (<>
-          <h3 className="text-2xl font-bold mt-8">{issueDetails.title}</h3>
-          <div className="mt-4 p-4 border rounded bg-gray-200">
-            {issueDetails.description ?
-              <p className="mt-2">{issueDetails.description}</p> :
-              <p className="text-gray-500 italic mt-2">No description available</p>}
-          </div>
-        </>
-      )}
-
-      {showFundingAmount && (
-        <div className="mt-4">
-          <p className="mb-2">Enter Funding Amount</p>
+      {!isSuccess ? (<>
+        <p className="mb-2">Copy github issue link and paste here to create a funding on it</p>
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-2 w-full">
           <div className="flex items-center gap-2 w-full">
             <input
-              type="number"
-              id="fundingAmount"
-              name="fundingAmount"
-              placeholder="Funding amount in dollars"
+              type="url"
+              id="githubIssueUrl"
+              name="githubIssueUrl"
+              placeholder="GitHub Issue URL"
               required
               className="w-2/3 p-2 border rounded"
-              value={fundingAmount}
-              onChange={handleFundingAmountChange}
+              value={inputValue}
+              onChange={handleInputChange}
             />
             <Button
-              onClick={() => setShowPopup(true)}
+              type="submit"
               className="w-1/3"
-              disabled={!fundingAmount}
+              disabled={showFundingAmount}
             >
-              Create Funding
+              Next
             </Button>
           </div>
+          {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
+        </form>
+
+        {issueDetails && (<>
+            <h3 className="text-2xl font-bold mt-8">{issueDetails.title}</h3>
+            <div className="mt-4 p-4 border rounded bg-gray-200">
+              {issueDetails.description ?
+                <p className="mt-2">{issueDetails.description}</p> :
+                <p className="text-gray-500 italic mt-2">No description available</p>}
+            </div>
+          </>
+        )}
+
+        {showFundingAmount && (
+          <div className="mt-4">
+            <p className="mb-2">Enter Funding Amount</p>
+            <div className="flex items-center gap-2 w-full">
+              <input
+                type="number"
+                id="fundingAmount"
+                name="fundingAmount"
+                placeholder="Funding amount in dollars"
+                required
+                className="w-2/3 p-2 border rounded"
+                value={fundingAmount}
+                onChange={handleFundingAmountChange}
+              />
+              <Button
+                onClick={() => setShowPopup(true)}
+                className="w-1/3"
+                disabled={!fundingAmount}
+              >
+                Create Funding
+              </Button>
+            </div>
+            {hash && (
+              <div>
+                Transaction Hash:{' '}
+                <a
+                  href={`https://base-sepolia.blockscout.com/tx/${hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700 underline"
+                >
+                  View on BaseScan
+                </a>
+              </div>
+            )}
+            {error && (
+              <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+            )}
+          </div>
+        )}
+        {showPopup && (
+          <PaymentPopup
+            amount={Number(fundingAmount)}
+            onClose={() => setShowPopup(false)}
+            onPayment={handleCreateFunding}
+          />
+        )}
+      </>) : (
+        <div className="flex flex-col items-center h-screen">
+          <p className="text-2xl font-bold mb-4">Funding created successfully!</p>
+          <p className={'text-center text-9xl'}>🎉</p>
           {hash && (
             <div>
               Transaction Hash:{' '}
-              <a 
-                href={`https://sepolia.basescan.org/tx/${hash}`} 
-                target="_blank" 
+              <a
+                href={`https://base-sepolia.blockscout.com/tx/${hash}`}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-700 underline"
               >
@@ -225,18 +257,7 @@ const PageContent = () => {
               </a>
             </div>
           )}
-          {error && (
-            <div>Error: {(error as BaseError).shortMessage || error.message}</div>
-          )}
-        </div>
-      )}
-      {showPopup && (
-        <PaymentPopup
-          amount={Number(fundingAmount)}
-          onClose={() => setShowPopup(false)}
-          onPayment={handleCreateFunding}
-        />
-      )}
+        </div>)}
     </div>
   );
 };
