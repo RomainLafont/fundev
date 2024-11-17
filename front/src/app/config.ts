@@ -1,11 +1,11 @@
 import { http } from 'wagmi';
-import { foundry } from 'wagmi/chains';
+import { baseSepolia } from 'viem/chains';
 import { createConfig } from '@privy-io/wagmi';
 
 export const config = createConfig({
-  chains: [foundry],
+  chains: [baseSepolia],
   transports: {
-    [foundry.id]: http(),
+    [baseSepolia.id]: http(),
   },
 });
 

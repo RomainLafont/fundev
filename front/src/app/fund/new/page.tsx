@@ -7,9 +7,10 @@ import { BaseError, useWriteContract } from 'wagmi';
 
 import { abi } from '@/abi/FunDev.json';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { useSetActiveWallet } from '@privy-io/wagmi';
+import PaymentPopup from '@/components/PaymentPopup';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_FUNDEV_CONTRACT_ADDRESS as `0x${string}`;
+const USDC_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS as `0x${string}`;
 
 interface IssueDetails {
   title: string;
@@ -30,6 +31,8 @@ const PageContent = () => {
   const [issueDetails, setIssueDetails] = useState<IssueDetails | null>(null);
   const [repo, setRepo] = useState<string>('');
   const [issueId, setIssueId] = useState<number>(0);
+
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -97,23 +100,53 @@ const PageContent = () => {
     }
   };
 
-
-  const { setActiveWallet } = useSetActiveWallet();
-  
-  const { data: hash, error, writeContract } = useWriteContract();
+  const { data: hash, error, writeContract, writeContractAsync } = useWriteContract();
 
   const handleCreateFunding = async () => {
     if (!wallets.length) {
       setErrorMessage('Please connect your wallet first.');
       return;
+    } else {
+      wallets[0].chainId = 'eip155:84532';
     }
 
+    console.log('Payment processed');
+    setShowPopup(false);
+
     if (writeContract) {
+      await writeContractAsync({
+        address: USDC_CONTRACT_ADDRESS,
+        abi: [
+          {
+            'constant': false,
+            'inputs': [
+              {
+                'name': '_spender',
+                'type': 'address',
+              },
+              {
+                'name': '_value',
+                'type': 'uint256',
+              },
+            ],
+            'name': 'approve',
+            'outputs': [
+              {
+                'name': '',
+                'type': 'bool',
+              },
+            ],
+            'type': 'function',
+          },
+        ],
+        functionName: 'approve',
+        args: [CONTRACT_ADDRESS, BigInt(Number(fundingAmount) * 6)],
+      });
       writeContract({
         address: CONTRACT_ADDRESS,
         abi,
         functionName: 'createIssue',
-        args: [repo, issueId, fundingAmount],
+        args: [repo, BigInt(issueId), BigInt(Number(fundingAmount) * 6)],
       });
       console.log('Transaction sent');
     }
@@ -172,7 +205,7 @@ const PageContent = () => {
               onChange={handleFundingAmountChange}
             />
             <Button
-              onClick={handleCreateFunding}
+              onClick={() => setShowPopup(true)}
               className="w-1/3"
               disabled={!fundingAmount}
             >
@@ -184,6 +217,13 @@ const PageContent = () => {
             <div>Error: {(error as BaseError).shortMessage || error.message}</div>
           )}
         </div>
+      )}
+      {showPopup && (
+        <PaymentPopup
+          amount={Number(fundingAmount)}
+          onClose={() => setShowPopup(false)}
+          onPayment={handleCreateFunding}
+        />
       )}
     </div>
   );
