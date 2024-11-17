@@ -142,13 +142,13 @@ const PageContent = () => {
           },
         ],
         functionName: 'approve',
-        args: [CONTRACT_ADDRESS, BigInt(Number(fundingAmount) * 6 ^ 10)],
+        args: [CONTRACT_ADDRESS, BigInt(Number(fundingAmount) * 10e5)],
       });
       writeContract({
         address: CONTRACT_ADDRESS,
         abi,
         functionName: 'createIssue',
-        args: [repo, BigInt(issueId), BigInt(Number(fundingAmount) * 6 ^ 10)],
+        args: [repo, BigInt(issueId), BigInt(Number(fundingAmount) * 10e5)],
       });
       setIsSuccess(true);
       console.log('Transaction sent');
@@ -224,7 +224,7 @@ const PageContent = () => {
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:text-blue-700 underline"
                 >
-                  View on BaseScan
+                  View on Blockscout
                 </a>
               </div>
             )}
@@ -253,7 +253,7 @@ const PageContent = () => {
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-700 underline"
               >
-                View on BaseScan
+                View on Blockscout
               </a>
             </div>
           )}
